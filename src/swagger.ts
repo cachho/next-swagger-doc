@@ -63,12 +63,14 @@ export function createSwaggerSpec({
     return result;
   }
 
-  // Append base path server element to server array, if basePath is specified.
+  // Append base path server element to server array
+  // Conditions: basePath is specified. Server array is empty or does not exist.
   const definition = {
     ...swaggerOptions.definition,
-    ...(process.env.__NEXT_ROUTER_BASEPATH && {
+    ...(process.env.__NEXT_ROUTER_BASEPATH
+      && (!swaggerOptions.definition.servers
+        || !swaggerOptions.definition.servers.length) && {
       servers: [
-        ...(swaggerOptions.definition.servers || []),
         {
           url: process.env.__NEXT_ROUTER_BASEPATH,
           description: 'next-js',
