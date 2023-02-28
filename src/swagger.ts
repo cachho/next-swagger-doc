@@ -1,10 +1,12 @@
+/* eslint-disable no-underscore-dangle */
 import { NextApiRequest, NextApiResponse } from 'next';
 import { join } from 'path';
-import swaggerJsdoc, { Options } from 'swagger-jsdoc';
+import swaggerJsdoc, { OAS3Definition, Options } from 'swagger-jsdoc';
 
 type SwaggerOptions = Options & {
   apiFolder?: string;
   schemaFolders?: string[];
+  definition: OAS3Definition;
   outputFile?: string;
 };
 
@@ -52,9 +54,33 @@ export function createSwaggerSpec({
       ),
     ];
   });
+
+  function omit<T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
+    const result = { ...obj };
+    keys.forEach((key) => {
+      delete result[key];
+    });
+    return result;
+  }
+
+  // Append base path server element to server array, if basePath is specified.
+  const definition = {
+    ...swaggerOptions.definition,
+    ...(process.env.__NEXT_ROUTER_BASEPATH && {
+      servers: [
+        ...(swaggerOptions.definition.servers || []),
+        {
+          url: process.env.__NEXT_ROUTER_BASEPATH,
+          description: 'next-js',
+        },
+      ],
+    }),
+  };
+
   const options: Options = {
     apis, // files containing annotations as above
-    ...swaggerOptions,
+    definition,
+    ...omit(swaggerOptions, ['definition']),
   };
   const spec = swaggerJsdoc(options);
 
