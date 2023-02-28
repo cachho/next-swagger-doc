@@ -55,14 +55,6 @@ export function createSwaggerSpec({
     ];
   });
 
-  function omit<T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K> {
-    const result = { ...obj };
-    keys.forEach((key) => {
-      delete result[key];
-    });
-    return result;
-  }
-
   // Append base path server element to server array
   // Conditions: basePath is specified. Server array is not defined.
   const definition = {
@@ -80,8 +72,8 @@ export function createSwaggerSpec({
 
   const options: Options = {
     apis, // files containing annotations as above
+    swaggerOptions,
     definition,
-    ...omit(swaggerOptions, ['definition']),
   };
   const spec = swaggerJsdoc(options);
 
